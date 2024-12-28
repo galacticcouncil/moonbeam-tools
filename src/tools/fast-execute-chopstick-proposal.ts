@@ -1,11 +1,13 @@
 // This script is expected to run against a parachain network (using launch.ts script)
 import { ApiPromise, Keyring } from "@polkadot/api";
+import { GenericExtrinsic } from '@polkadot/types';
 import { FrameSupportPreimagesBounded } from "@polkadot/types/lookup";
 import { blake2AsHex } from "@polkadot/util-crypto";
 import chalk from "chalk";
 import yargs from "yargs";
 
 import { ALITH_PRIVATE_KEY, getApiFor, NETWORK_YARGS_OPTIONS } from "../index.ts";
+import { hexToU8a } from "@polkadot/util";
 
 const debug = require("debug")("fast-executor");
 const argv = yargs(process.argv.slice(2))
@@ -17,9 +19,9 @@ const argv = yargs(process.argv.slice(2))
       type: "number",
       description: "Proposal index",
     },
-    "generate-proposal": {
-      type: "boolean",
-      description: "Proposal index",
+    "encoded-proposal": {
+      type: "string",
+      description: "Encoded proposal",
     },
   }).argv;
 
@@ -66,22 +68,15 @@ async function moveScheduledCallTo(
   }
 }
 
-const generateProposal = async (api: ApiPromise, proposalIndex: number) => {
-  const keyring = new Keyring({ type: "ethereum" });
-  const alith = await keyring.addFromUri(ALITH_PRIVATE_KEY);
-  // Create a fake proposal for testing purposes
+const generateProposal = async (api: ApiPromise, proposalIndex: number, encodedProposal: string = null) => {
+  const keyring = new Keyring({ type: 'sr25519' });
+  const alice = keyring.addFromUri('//Alice');
 
-  // setInflation is allowed for GeneralAdmin and also sends an event for verification.
-  const preimage = api.tx.parachainStaking.setInflation({
-    min: Number(proposalIndex) % 99,
-    ideal: Number(proposalIndex) % 99,
-    max: Number(proposalIndex) % 99,
-  });
+  const preimage = api.tx(api.registry.createType('Call', encodedProposal));
 
-  console.log("Generating proposal...'parachainStaking.setInflation' (GeneralAdmin)");
-  await new Promise<void>(async (resolve) => {
+  await new Promise<void>(async (resolve, reject) => {
     const unsub = await api.tx.utility
-      .batch([
+      .batchAll([
         api.tx.preimage.notePreimage(preimage.method.toHex()),
         api.tx.referenda.submit(
           {
@@ -90,31 +85,35 @@ const generateProposal = async (api: ApiPromise, proposalIndex: number) => {
           { Lookup: { Hash: preimage.method.hash.toHex(), len: preimage.method.encodedLength } },
           { At: 0 },
         ),
-        api.tx.referenda.placeDecisionDeposit(proposalIndex),
       ])
-      .signAndSend(alith, (status: any) => {
+      .signAndSend(alice, (status: any) => {
         if (status.blockNumber) {
           unsub();
-          resolve();
+          const error = status.dispatchError?.toString();
+          if (error) {
+            reject(new Error("failed to submit referenda: " + error));
+          } else {
+            resolve();
+          }
         }
       });
   });
 };
 
 const main = async () => {
-  if (argv["generate-proposal"] && "proposal-index" in argv) {
-    console.log("--generate-proposal not compatible with --proposal-index");
+  if (argv["encoded-proposal"] && "proposal-index" in argv) {
+    console.log("--encoded-proposal not compatible with --proposal-index");
     return;
   }
-  if (!argv["generate-proposal"] && !("proposal-index" in argv)) {
-    console.log("Missing --generate-proposal or --proposal-index");
+  if (!argv["encoded-proposal"] && !("proposal-index" in argv)) {
+    console.log("Missing --encoded-proposal or --proposal-index");
     return;
   }
 
   // Instantiate Api
   const api = await getApiFor(argv);
   const totalIssuance = (await api.query.balances.totalIssuance()).toBigInt();
-  const proposalIndex = argv["generate-proposal"]
+  const proposalIndex = argv["encoded-proposal"]
     ? (await api.query.referenda.referendumCount()).toNumber()
     : argv["proposal-index"];
 
@@ -124,8 +123,8 @@ const main = async () => {
     )}`,
   );
 
-  if (argv["generate-proposal"]) {
-    await generateProposal(api, proposalIndex);
+  if (argv["encoded-proposal"]) {
+    await generateProposal(api, proposalIndex, argv["encoded-proposal"]);
   }
 
   const referendumData = await api.query.referenda.referendumInfoFor(proposalIndex);

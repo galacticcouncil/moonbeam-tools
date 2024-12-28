@@ -1,22 +1,34 @@
 # moonbeam-tools
 
-Tools related to Moonbeam blockchains.
+Tools related *not just* to Moonbeam blockchains.
 
-## Requirements
+## Dependencies
 
-* bun v1+
+ - node >=22+
+ - bun >=1+ https://bun.sh/docs/installation
 
-## Actions
-__Installation__: `npm install`  
-__Test__: `bun run test`  
-__Build__: `bun run build`  
-__Publish__: `bun publish`  
+## Install
+```npm install```
 
 ## Debug
 
 You can use `DEBUG=helper:*` for logs on the state manipation
 
 # Tools
+
+## Testing proposals
+
+Given you are running chopsticks on port 8000, you can directly enact encoded proposal:
+
+```sh
+bun ./src/tools/fast-execute-chopstick-proposal.ts --url ws://127.0.0.1:8000 --encoded-proposal 0x...  
+```
+
+Alternatively if the proposal you want to test is already in referendas, you can just execute it by supplying its index:
+
+```sh
+bun ./src/tools/fast-execute-chopstick-proposal.ts --url ws://127.0.0.1:8000 --proposal-index 1
+```
 
 ## Monitoring chains
 
@@ -44,7 +56,7 @@ Options:
 <html>
   <head>
     <title>Monitoring</title>
-    <link rel="modulepreload" href="https://unpkg.com/moonbeam-tools@0.1.2/dist/index.esm.js" charset="UTF-8" integrity="sha384-YQ+IMhoNgwPmfCEeD4eY1O7I2Tyr/Ebtk6dENIlj+eY4Kf2iTbE8amYdW3NUH/kS" crossorigin="anonymous"></script>
+    <link rel="modulepreload" href="https://unpkg.com/moonbeam-tools@0.1.2/dist/index.esm.js" charset="UTF-8" integrity="sha384-kKrNJ7QoSHtRA+iHaLs+3x2H3kp+bfIyeubWze83BiJ6TsQcjyJN1lZqTUjQ5JOq" crossorigin="anonymous"></script>
     <style>
       body {
         padding: 2rem;

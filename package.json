@@ -93,7 +93,7 @@
     "build:bins:export-state": "bun build src/tools/export-state.ts --compile --outfile dist/export-state  --sourcemap",
     "build:readme": "./scripts/update-readme.sh",
     "lint": "bunx prettier --write .",
-    "fork": "bunx ./src/tools/run-moonbeam-fork.ts --base-path /tmp/fork-data/ --network moonbeam --smaller-state"
+    "fork": "bun ./src/tools/run-moonbeam-fork.ts --base-path /tmp/fork-data/ --network moonbeam --smaller-state"
   },
   "repository": {
     "type": "git",

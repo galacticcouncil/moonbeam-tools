@@ -110,3 +110,6 @@ test/*-result.json
 binaries/*
 
 *.wasm
+
+.idea/
+*.db.sqlite*

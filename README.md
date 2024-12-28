@@ -22,16 +22,16 @@ You can use `DEBUG=helper:*` for logs on the state manipation
 
 ## Testing proposals
 
-Given you are running chopsticks on port 8000, you can directly enact encoded proposal:
+Given you are running chopsticks on port 8000, you can directly enact the encoded proposal:
 
 ```sh
-bun ./src/tools/fast-execute-chopstick-proposal.ts --url ws://127.0.0.1:8000 --encoded-proposal 0x...  
+bun src/tools/fast-execute-chopstick-proposal.ts --url ws://127.0.0.1:8000 --encoded-proposal 0x...  
 ```
 
-Alternatively if the proposal you want to test is already in referendas, you can just execute it by supplying its index:
+Alternatively, if the proposal you want to test is already in referendas, you can just execute it by supplying its index:
 
 ```sh
-bun ./src/tools/fast-execute-chopstick-proposal.ts --url ws://127.0.0.1:8000 --proposal-index 1
+bun src/tools/fast-execute-chopstick-proposal.ts --url ws://127.0.0.1:8000 --proposal-index 1
 ```
 
 ## Monitoring chains

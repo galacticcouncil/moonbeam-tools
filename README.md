@@ -4,11 +4,15 @@ Tools related *not just* to Moonbeam blockchains.
 
 ## Dependencies
 
- - node >=22+
- - bun >=1+ https://bun.sh/docs/installation
+ - node >=22
+ - bun >=1 (https://bun.sh/docs/installation)
 
 ## Install
-```npm install```
+```
+git clone https://github.com/galacticcouncil/moonbeam-tools.git
+cd moonbeam-tools
+npm install
+```
 
 ## Debug
 
